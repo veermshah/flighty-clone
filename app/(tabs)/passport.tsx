@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Colors from '@/constants/Colors';
@@ -18,7 +18,7 @@ export default function PassportScreen() {
   const topRoutes = Object.entries(routeCounts).sort(([, a], [, b]) => b - a).slice(0, 3);
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Passport</Text>
         <View style={styles.profile}><View style={styles.profileAvatar}><Text style={styles.profileInitials}>VS</Text></View><View style={styles.profileCopy}><Text style={styles.name}>Veer Shah</Text><View style={styles.proBadge}><Ionicons name="sparkles" size={12} color={Colors.accent} /><Text style={styles.proText}>Flighty Pro</Text></View></View><Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} /></View>
         <View style={styles.stats}><Stat label="Flights" value={`${flights.length}`} /><Stat label="Miles" value={miles.toLocaleString()} /><Stat label="Hours" value={`${hours}`} /><Stat label="Airports" value={`${airports}`} /><Stat label="Airlines" value={`${airlines}`} /><Stat label="Countries" value={`${countries}`} /></View>
@@ -28,7 +28,7 @@ export default function PassportScreen() {
         <View style={styles.chips}>{Array.from(new Set(flights.flatMap((flight) => [flight.from.code, flight.to.code]))).map((code) => <View style={styles.chip} key={code}><Text style={styles.chipText}>{code}</Text></View>)}</View>
         <SectionTitle title="Settings" />
         <View style={styles.card}>{settings.map((setting) => <View style={styles.setting} key={setting}><Text style={styles.settingText}>{setting}</Text><Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} /></View>)}</View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -38,7 +38,7 @@ function SectionTitle({ title }: { title: string }) { return <Text style={styles
 
 const styles = StyleSheet.create({
   safe: { backgroundColor: Colors.bg, flex: 1 },
-  content: { paddingBottom: 28, paddingHorizontal: 16, paddingTop: 14 },
+  content: { paddingBottom: 40, paddingHorizontal: 16, paddingTop: 14 },
   title: { color: Colors.textPrimary, fontSize: 34, fontWeight: '800', letterSpacing: -1 },
   profile: { alignItems: 'center', flexDirection: 'row', marginTop: 23 },
   profileAvatar: { alignItems: 'center', backgroundColor: Colors.accent, borderRadius: 30, height: 60, justifyContent: 'center', width: 60 },

@@ -130,15 +130,31 @@ const popularRoutes: Array<[string, string, string, string]> = [
   ['AA', '482', 'LAX', 'ORD'],
   ['DL', '1688', 'ATL', 'BOS'],
   ['AC', '743', 'YYZ', 'LHR'],
+  ['UA', '512', 'SFO', 'LAX'],
+  ['AS', '1012', 'SFO', 'LAX'],
+  ['WN', '2210', 'LAX', 'SFO'],
+  ['B6', '615', 'JFK', 'SFO'],
+  ['DL', '2740', 'SEA', 'ATL'],
+  ['UA', '1905', 'DEN', 'ORD'],
+  ['AA', '2456', 'DFW', 'LAX'],
+  ['BA', '284', 'LHR', 'SFO'],
+  ['UA', '837', 'SFO', 'NRT'],
+  ['AC', '759', 'YYZ', 'SFO'],
 ];
+
+const carrierRotation = ['UA', 'AA', 'DL'];
 
 export function generateFlightSchedule(query: string, date: Date): Flight[] {
   const normalized = query.trim().toUpperCase().replace(/\s+TO\s+|\s*[-→]\s*/g, ' ');
   const compact = normalized.replace(/\s+/g, '');
-  const matches = popularRoutes.filter(([carrier, number, from, to]) => {
+  let matches = popularRoutes.filter(([carrier, number, from, to]) => {
     if (!normalized) return true;
-    return `${carrier}${number}`.includes(compact) || `${carrier} ${number}`.includes(normalized) || `${from} ${to}`.includes(normalized) || `${to} ${from}`.includes(normalized);
+    return `${carrier}${number}`.includes(compact) || `${carrier} ${number}`.includes(normalized) || `${from} ${to}`.includes(normalized) || `${from}${to}`.includes(compact);
   });
+  const routeCodes = compact.match(/^([A-Z]{3})([A-Z]{3})$/);
+  if (matches.length === 0 && routeCodes && airports[routeCodes[1]] && airports[routeCodes[2]] && routeCodes[1] !== routeCodes[2]) {
+    matches = carrierRotation.map((carrier, index) => [carrier, `${(routeCodes[1].charCodeAt(0) + routeCodes[2].charCodeAt(2)) * 7 + index * 113}`, routeCodes[1], routeCodes[2]]);
+  }
   const base = date.getTime();
   return matches.slice(0, 6).map(([carrier, number, from, to], index) =>
     makeFlight(
