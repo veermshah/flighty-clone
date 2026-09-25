@@ -1,13 +1,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Colors from '@/constants/Colors';
 import { RouteMap } from '@/components/RouteMap';
 import { Timeline } from '@/components/Timeline';
 import { durationLabel, formatDateLabel, formatTime, minutesUntil, statusColor, statusLabel } from '@/lib/format';
+import { confirmDestructive } from '@/lib/confirm';
 import { useFlights } from '@/lib/FlightsContext';
 
 export default function FlightDetailScreen() {
@@ -25,9 +26,21 @@ export default function FlightDetailScreen() {
     );
   }
   const color = statusColor(flight);
-  const shareFlight = () => Share.share({ message: `${flight.number}: ${flight.from.code} → ${flight.to.code} · ${statusLabel(flight)}` });
+  const shareFlight = async () => {
+    const message = `${flight.number}: ${flight.from.code} → ${flight.to.code} · ${statusLabel(flight)}`;
+    try {
+      if (Platform.OS === 'web') {
+        if (typeof navigator.share === 'function') await navigator.share({ text: message });
+        else await navigator.clipboard.writeText(message);
+        return;
+      }
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet or sharing is unavailable
+    }
+  };
   const statusHeadline = flight.status === 'en_route' ? `Landing in ${Math.floor(minutesUntil(flight.estimatedArrival) / 60)}h ${minutesUntil(flight.estimatedArrival) % 60}m` : flight.status === 'delayed' ? `Delayed ${flight.delayMinutes} min` : flight.status === 'landed' || flight.status === 'arrived' ? `Landed ${formatTime(flight.actualArrival ?? flight.estimatedArrival, flight.to.tz)}` : `Departs in ${Math.floor(minutesUntil(flight.estimatedDeparture) / 60)}h ${minutesUntil(flight.estimatedDeparture) % 60}m`;
-  const remove = () => Alert.alert('Remove flight?', `Remove ${flight.number} from your flights?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { removeFlight(flight.id); router.back(); } }]);
+  const remove = () => confirmDestructive('Remove flight?', `Remove ${flight.number} from your flights?`, 'Remove', () => { removeFlight(flight.id); router.back(); });
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>

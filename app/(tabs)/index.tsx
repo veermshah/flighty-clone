@@ -1,12 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Colors from '@/constants/Colors';
 import { FlightCard } from '@/components/FlightCard';
 import { formatDateLabel } from '@/lib/format';
+import { confirmDestructive } from '@/lib/confirm';
 import { useFlights } from '@/lib/FlightsContext';
 import { Flight } from '@/types';
 
@@ -29,7 +30,7 @@ export default function FlightsScreen() {
     ...(upcoming.length ? [{ title: 'Upcoming', data: upcoming }] : []),
     ...(past.length && showPast ? [{ title: 'Past', data: past }] : []),
   ];
-  const confirmRemove = (flight: Flight) => Alert.alert('Remove flight?', `${flight.number} · ${flight.from.code} to ${flight.to.code}`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => removeFlight(flight.id) }]);
+  const confirmRemove = (flight: Flight) => confirmDestructive('Remove flight?', `${flight.number} · ${flight.from.code} to ${flight.to.code}`, 'Remove', () => removeFlight(flight.id));
   const refresh = async () => { setRefreshing(true); await new Promise((resolve) => setTimeout(resolve, 600)); setRefreshing(false); };
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
